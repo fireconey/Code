@@ -768,12 +768,13 @@ function chajian()
 	/*****************空格分割工具*****************/
 	/*
 	x:表示字符串 
+	vale:表示按照什么分割
 	注意大写会变成小写
 	返回list
 	*/
-	this.tool = function(x)
+	this.tool = function(x,vale)
 	{
-		var h = x.toLowerCase().split(" ");
+		var h = x.toLowerCase().split(vale);
 		var tol = [];
 
 		for (var i = 0; i < h.length; i++)
@@ -845,7 +846,7 @@ function chajian()
 		名称使用[]号替代点号可以动态设置名称.
 		由于$函数中每次是new一个对象，所以使用
 		prototype 设置插件，这样左右的对象可以
-		共享这个插件
+		共享这个插件(单例模式)
 		*/
 		chajian.prototype[name] = x
 		return this
@@ -1028,6 +1029,42 @@ function chajian()
 			*/
 			this.query(_x) 
 		}
+	}
+
+
+	/*********************ajax*************/
+	
+	/*ajax({
+           "type":"post",
+           "url":"u",
+           "data":{"v":12,"b","dfd"}, 或者传入FormData()
+           "fn":function(value){
+               var t=value.responseText
+                   alert(t)
+           }
+       })
+    */
+
+	this.ajax=function(value)
+	{
+		ar xl = 0
+      var type = value["type"]
+      var url = value["url"]
+      var data = new FormData(value["usr"])
+      var fn = value["fn"]
+      if (window.XMLHttpRequest) {
+          xl = new XMLHttpRequest()
+      }
+      else {
+          xl = new ActiveXObject("Microsoft.XMLHTTP")
+      }
+      xl.open(type, url, true)
+      xl.send(data)
+      xl.onreadystatechange = function () {
+          if (xl.readyState == 4 & xl.status == 200) {
+              fn(xl)
+          }
+      }
 	}
 
 }
