@@ -1,0 +1,28 @@
+
+
+	/*
+	以下是默认设置
+	可以改写,_wrap是包裹所有的
+	图片的盒子，决定视角向上还是向下
+	*/
+
+	#_wrap{
+		
+		/*position: relative;*/
+		width:160px;
+		height: 240px; 
+		border: 1px solid #000;
+		margin: 350px auto;
+		/*transform-style:preserve-3d; */
+		/*transform: rotateX(-10deg) rotateY(0deg);*/
+	}
+
+
+	#_wrap img{
+		/*position: absolute;*/
+		width: 160px;
+		height: 240px;
+		border: 1px solid red;
+		/*倒影从下到上，top表示结束*/
+		/*-webkit-box-reflect:below 5px -webkit-linear-gradient(top,rgba(0,0,0,0) 40%,rgba(0,0,0,0.5) 100%) ;*/	
+	}
