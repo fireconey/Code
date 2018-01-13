@@ -245,7 +245,7 @@ function chajian()
     this.include = function(x) 
     {
     	var body = document.getElementsByTagName("html")[0];
-    	var content = document.createElement("srcipt");
+    	var content = document.createElement("script");
 
     	content.setAttribute("src", x)
     	body.append(content)
