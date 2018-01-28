@@ -177,17 +177,16 @@ function chajian()
 					{
 						this.temp.push(ele[j])
 					}
-
-				/*某级还有子元素，但是下一个传入的参数
+			    }
+			    /*某级还有子元素，但是下一个传入的参数
 				和子元素不一样导致temp空有子元素
 				则temp为空；同时父元素列表中的父元素都查询
-				过了，一个正确的字元素也没有，就表示查询失败。*/
+				过了，一个正确的字元素也没有，就表示。*/
 				if (this.temp.length == 0 && i== this.element.length - 1)
 				{
 					alert("没有此对象:" + ale + "\n或者Html中嵌套错误" + "\n在findchild函数中报错")
 					return;
 				}
-			}
 		}
 		this.element = this.temp
 		return this
