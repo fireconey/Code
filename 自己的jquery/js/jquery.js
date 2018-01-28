@@ -178,10 +178,11 @@ function chajian()
 						this.temp.push(ele[j])
 					}
 
-				/*某级还有子元素，但是下一个参数
+				/*某级还有子元素，但是下一个传入的参数
 				和子元素不一样导致temp空有子元素
-				且temp为空，可以确定上面条件。*/
-				if (this.temp.length == 0 && j == ele.length - 1) 
+				则temp为空；同时父元素列表中的父元素都查询
+				过了，一个正确的字元素也没有，就表示查询失败。*/
+				if (this.temp.length == 0 && i== this.element.length - 1)
 				{
 					alert("没有此对象:" + ale + "\n或者Html中嵌套错误" + "\n在findchild函数中报错")
 					return;
@@ -207,7 +208,7 @@ function chajian()
 	this.child = 0 //数据由query修改传给findchild，用于计数有多少个参数传入
 	this.query = function(x) 
 	{   _x=x    //在操作插入一次中要求更新，所以后面要调用这个函数参数一样
-		var q = this.tool(x)
+		var q = this.tool(x," ")
 		var tem = 0
 
 		/*
