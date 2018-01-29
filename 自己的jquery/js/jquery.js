@@ -7,6 +7,11 @@
 	return this 是返回插件这个对象，这
 	样可以使用连号继续调用其中的方法，
 	起到连缀的效果（如：a.b.c）。
+
+    ********************注意********************
+	调用findchild()方法后，父元素集当即作废了
+	要使用父元素集得从新获取。
+	********************************************
 	*/
 
 	var $= function(x) 
@@ -37,6 +42,7 @@ function chajian()
 {
 
 	//随便弄几个变量以便放值
+	this.someinnerel=[]
 	this.element = []
 	this.temp = 1
 	/*
@@ -72,6 +78,11 @@ function chajian()
 				alert("查询类的时候发生错误，是否$()中输入有错?")
 			}
 		}
+		//使用内部局部的元素来调用方法时
+		//this.element不能修改（this.element=this.sominnerel），
+		//否则第二次调用后this.element是修改后的了。造成第二个元素丢失
+
+		this.someinnerel=this.element
 		return this
 	}
 
@@ -88,11 +99,16 @@ function chajian()
 		{
 			this.element[0] = id
 			this.temp = id
+
 		}
 		if (id == null) 
 		{
 			alert("查询id时发生错误，是否$()中输入有错?")
 		}
+		//使用内部局部的元素来调用方法时
+		//this.element不能修改（this.element=this.sominnerel），
+		//否则第二次调用后this.element是修改后的了。造成第二个元素丢失
+			this.someinnerel=this.element
 		return this
 	}
 
@@ -108,18 +124,18 @@ function chajian()
 		{
 			this.element = el
 			this.temp = el
+
 		}
 		if (el.length == 0) 
 		{
 			alert("查询元素时发生错误，是否$()中输入有错?")
 		}
+		//使用内部局部的元素来调用方法时
+		//this.element不能修改（this.element=this.sominnerel），
+		//否则第二次调用后this.element是修改后的了。造成第二个元素丢失
+			this.someinnerel=this.element
 		return this
 	}
-
-
-
-
-
 
 	/*******通过调用上面其中某个方法后得到一个对象，根据此对象得到子对象***********/
     
@@ -173,10 +189,16 @@ function chajian()
 				for (var j = 0; j < ele.length; j++) 
 				{
 					var ch = ele[j][flag].toLowerCase()
-					if (ch == y) 
+					    ch=ch.split(" ")
+					for(var n=0;n<ch.length;n++)//一个元素的类中可以有多个标签
 					{
-						this.temp.push(ele[j])
+						if (ch[n]== y) 
+						{
+							this.temp.push(ele[j])
+						}
+
 					}
+					
 			    }
 			    /*某级还有子元素，但是下一个传入的参数
 				和子元素不一样导致temp空有子元素
@@ -189,6 +211,12 @@ function chajian()
 				}
 		}
 		this.element = this.temp
+		//使getinnerEl函数清空this.element前有个备份
+		//如果在getinnerEl中备份，导致第二次调用函数时
+		//this.someinnerel又备份了一次，变成清空后的列表了。
+		//(this.someinnerel=this.element)
+		this.someinnerel=this.temp
+
 		return this
 	}
 
@@ -311,10 +339,9 @@ function chajian()
 			if (y[i] != "") 
 			{
 				var u = y[i].split(":")
-
-				for (var j = 0; j < this.element.length; j++) 
+				for (var j = 0; j < this.someinnerel.length; j++) 
 				{
-					this.element[j].style[u[0]] = u[1] //style的点号可以使用[]替代，这样就能动态设置了。
+					this.someinnerel[j].style[u[0]] = u[1] //style的点号可以使用[]替代，这样就能动态设置了。
 				}
 			}
 		}
@@ -336,7 +363,6 @@ function chajian()
 	{
 		var ar=arguments;
 		var len=ar.length;
-		var _temp
 		if(this.element.length==0)
 		{
 			alert("你还没有选定元素");
@@ -365,9 +391,8 @@ function chajian()
 			}
 			if(arguments[1]=="$")
 			{
-				_temp=this.element[arguments[0]]
-				this.element=[]
-				this.element.push(_temp)
+				this.someinnerel=[]
+				this.someinnerel[0]=this.element[arguments[0]]
 				return this
 			}
 			else
