@@ -1142,9 +1142,73 @@ function chajian()
 
 	/********************重写json解决每次通过ajax获取的数据有单引号不能变成json的问题****/
 	this.json=function(_Y)
-	{  var _Y=_Y.replace(/\s+/g,"").replace(/\'/g,'"')
+	{  var _Y=_Y.trim().replace(/\'/g,'"')
        var value=JSON.parse(_Y)
        return value
+	}
+
+/*
+使用方法
+1、$().setcookie("name=oio;sex=men")
+2、$().setcookie("name=oio,sex=men")
+*/
+	/*******************设置cookie**************/
+	this.setcookie=function(value)
+	{
+		var lis=value.split(",")
+		if(lis.length==1)
+		{ 
+			lis=lis[0].split(";")
+
+		}
+		var j=lis.length
+		for(var i=0;i<j;i++)
+		{  
+		   	document.cookie=encodeURIComponent(lis[i])
+
+		}
+	}
+
+
+/*
+使用方法
+$().getcookie("name")
+$().getcookie("all")[i]
+**/
+
+   /*********************获取cookie*******************/
+	this.getcookie=function(value)
+	{   
+		var lis=(decodeURIComponent(document.cookie).split(";"))
+		var j=lis.length
+		var dic={}
+		var temp=""
+		for(var i=0;i<j;i++)
+		{
+ 			temp=lis[i].split("=")
+ 			
+ 			dic[temp[0]]=temp[1]
+		}
+
+		if(value=="all")
+		{
+			return dic
+		}
+
+		if(value!="all")
+		{   
+			temp=dic[value]
+			if(typeof(temp)=="undefined")
+			{
+			alert("在jquery中报错:cookie中没有数据或索引错误错误！\n给你返回空字符串")
+			return ""	
+			}
+				
+			
+			else
+				return dic[value]
+		}
+		
 	}
 
 
