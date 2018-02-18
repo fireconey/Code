@@ -158,7 +158,7 @@ session.run(tf.global_variables_initializer())
 def show_progress(epoch,feed_dict_train,feed_dict_validate,val_loss,i):
     acc=session.run(accuracy,feed_dict=feed_dict_train)
     val_acc=session.run(accuracy,feed_dict=feed_dict_validate)
-    msg="训练输出()--迭代输出()--训练的概率()--验证通过概率()---验证通过损失值"
+    msg="训练输出{}--迭代输出{}--训练的概率{}--验证通过概率{}---验证通过损失值{}"
     print(msg.format(epoch+1,i,acc,val_acc,val_loss))
     
 
@@ -172,15 +172,14 @@ def train(num_iteration):
     for i in range(total_iterations,
                    total_iterations+num_iteration):
         x_batch,y_true_batch,_,cls_batch=data.train.next_batch(batch_size)
-        x_valid_batch,y_valid_batch,_,valid_cls_btch=data.valid.nex_batch(batch_size)
-        
+        x_valid_batch,y_valid_batch,_,valid_cls_btch=data.valid.next_batch(batch_size)
         feed_dict_tr={x:x_batch,
                       y_true:y_true_batch}
         feed_dict_val={x:x_valid_batch,
                        y_true:y_valid_batch}
         
         
-        session.run(optimizer,feef_dict=feed_dict_tr)
+        session.run(optimizer,feed_dict=feed_dict_tr)
         
         if i%int(data.train.num_examples/batch_size)==0:
             val_loss=session.run(cost,feed_dict=feed_dict_val)
@@ -189,4 +188,4 @@ def train(num_iteration):
             saver.save(session,"./data/ko.ckpt",global_step=i)
     total_iterations+=num_iteration
     
-train(num_iteration=8)
+train(num_iteration=100)

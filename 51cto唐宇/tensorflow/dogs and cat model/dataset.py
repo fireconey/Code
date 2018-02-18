@@ -30,18 +30,21 @@ class DataSet(object):
         return self._labels
     
     @property
-    def epoch_done(self):
+    def epochs_done(self):
         return self._epochs_done
+    @property
+    def num_examples(self):
+        return self._num_examples
     
     def next_batch(self,batch_size):
         start=self._index_in_epoch
         self._index_in_epoch+=batch_size
         
         if self._index_in_epoch>self._num_examples:
-            self._epoch_done=1
+            self._epochs_done+=1
             start=0
             self._index_in_epoch=batch_size
-            assert batch_size<=self._num_examples
+           
         end=self._index_in_epoch
         
         return self._images[start:end],self._labels[start:end],self._img_names[start:end],self._cls[start:end]
