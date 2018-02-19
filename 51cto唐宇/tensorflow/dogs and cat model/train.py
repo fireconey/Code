@@ -163,7 +163,7 @@ def show_progress(epoch,feed_dict_train,feed_dict_validate,val_loss,i):
     
 
 total_iterations=0
-saver=tf.train.Saver()
+sav=tf.train.Saver()
 
 
 def train(num_iteration):
@@ -185,7 +185,8 @@ def train(num_iteration):
             val_loss=session.run(cost,feed_dict=feed_dict_val)
             epoch=int(i/int(data.train.num_examples/batch_size))
             show_progress(epoch,feed_dict_tr,feed_dict_val,val_loss,i)
-            saver.save(session,"./data/ko.ckpt",global_step=i)
+            if i==998:
+                sav.save(session,"./data/ko.ckpt",global_step=i)
     total_iterations+=num_iteration
     
-train(num_iteration=100)
+train(num_iteration=1000)
