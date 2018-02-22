@@ -142,29 +142,37 @@ def create_convolutional_layer(input,               #输入的数据
 def create_flaten_layer(layer):
 
     #得到一个list。里面是四维数据的每一维的数据量
-    #如运行后得到数据[32,8,8,3]
+    #如运行后得到数据[32,8,8,64]
     layer_shape=layer.get_shape()   
 
     #由于第一个数据表示的是图片所有。我要的是图片的宽度，
     #高度，和通道数因此取1-3位置的数据,[1:4]表示1-3，4不取
-    #后面的num_elements()是得到数据数量如取的是[8,8,3]
-    #数据量就是8*8*3
+    #后面的num_elements()是得到数据数量如取的是[8,8,64]
+    #数据量就是8*8*64=64*64=4096
     num_features=layer_shape[1:4].num_elements()  
     layer=tf.reshape(layer,[-1,num_features])
     
     return layer
 
 
-
+#定义全链接
 def create_fc_layer(input,
                     num_inputs,
                     num_outputs,
                     use_relu=True):
+    #创建权重值
     weights=create_weights(shape=[num_inputs,num_outputs])
     biases=create_biases(num_outputs)
     
+    #进行全链接
     layer=tf.matmul(input,weights)+biases
+
+    #dropout不改变数据维度，每个神经元保存的概率是0.7
+    #抑制的神经元是数据全变为0
+    #没有抑制的是对应的变成y/keep_prob
     layer=tf.nn.dropout(layer,keep_prob=0.7)
+
+    #如果要使用软路就是用软路
     if use_relu:
         layer=tf.nn.relu(layer)
     return layer
@@ -191,7 +199,7 @@ layer_conv3=create_convolutional_layer(input=layer_conv2,
 
 
 
-
+#全链接前的拉伸操作
 layer_flat=create_flaten_layer(layer_conv3)
 
 layer_fc1=create_fc_layer(input=layer_flat,
@@ -201,7 +209,7 @@ layer_fc1=create_fc_layer(input=layer_flat,
                           
                           )
 
-
+#全链接
 layer_fc2=create_fc_layer(input=layer_fc1,
                           num_inputs=fc_layer_size,
                           num_outputs=num_classes,
@@ -209,29 +217,54 @@ layer_fc2=create_fc_layer(input=layer_fc1,
                           
                           )
 
+
+#计算概率
 y_pred=tf.nn.softmax(layer_fc2,name="y_pred")
 
 y_pred_cls=tf.argmax(y_pred,dimension=1)
 
 session.run(tf.global_variables_initializer())
 
+#交叉熵进行训练好坏的评估,由于训练的w不是最优的所以要使用adamOptimzers()来替换
 cross_entropy=tf.nn.softmax_cross_entropy_with_logits(logits=layer_fc2,
                                                       labels=y_true)
 
+#由于所有维度都有一个交叉熵值所以要平均值来评价总体的好坏
 cost=tf.reduce_mean(cross_entropy)
+
+#AdamOptimizers是全自动调整训练的步调大小。
 optimizer=tf.train.AdamOptimizer(learning_rate=1e-4).minimize(cost)
+
+#y_pred_cls是预测类别的下标
+#y_true_cls是通过查询标签中的最大值来确定的下标
+#下面的equal返回的是布尔值的矩阵.是预测标签和真实
+#标签的对比的集合。
+#如预测的是[[0.1,0.9],
+#         [0.1,0.8]]
+#真实的是[[0,1],
+#        [1,0]]
+#获取的下标为[1,1]和[1,0]
+#这两对应位置下标相等就是true，表示预测对了
+#使用equa得到数据[true，false]                         
 correct_prediction=tf.equal(y_pred_cls,y_true_cls)
+
+#布尔值矩阵进行计算可以计算出其中总体的正确预测概率
 accuracy=tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
 
 session.run(tf.global_variables_initializer())
+
+#展示训练过程中的结果
 def show_progress(epoch,feed_dict_train,feed_dict_validate,val_loss,i):
     acc=session.run(accuracy,feed_dict=feed_dict_train)
     val_acc=session.run(accuracy,feed_dict=feed_dict_validate)
-    msg="训练输出{}--迭代输出{}--训练的概率{}--验证通过概率{}---验证通过损失值{}"
+    msg="第{}次循环--迭代了{}--训练过程中正确的总体概率{}--训练完之后使用验证集验证，有多大的正确率{}---验证通过损失值{}"
     print(msg.format(epoch+1,i,acc,val_acc,val_loss))
     
 
+#记录迭代了几次
 total_iterations=0
+
+#保存模型的函数初始化
 sav=tf.train.Saver()
 
 
@@ -240,22 +273,31 @@ def train(num_iteration):
     
     for i in range(total_iterations,
                    total_iterations+num_iteration):
+
+        #训练集和测试集读入内存中
         x_batch,y_true_batch,_,cls_batch=data.train.next_batch(batch_size)
         x_valid_batch,y_valid_batch,_,valid_cls_btch=data.valid.next_batch(batch_size)
-        feed_dict_tr={x:x_batch,
+        
+        #定义要传入输入数据中的参数
+        feed_dict_tr={x:x_batch,            #定义训练集的参数
                       y_true:y_true_batch}
-        feed_dict_val={x:x_valid_batch,
+
+        feed_dict_val={x:x_valid_batch,     #定义验证集的参数
                        y_true:y_valid_batch}
         
         
+        #使用交叉熵开始训练
         session.run(optimizer,feed_dict=feed_dict_tr)
         
+        #i%int(data.train.num_examples/batch_size)==0
+        #括号里面的表有一个循环有多少批次，总体是每迭代完一个循环
+        #就进入一次
         if i%int(data.train.num_examples/batch_size)==0:
             val_loss=session.run(cost,feed_dict=feed_dict_val)
-            epoch=int(i/int(data.train.num_examples/batch_size))
-            show_progress(epoch,feed_dict_tr,feed_dict_val,val_loss,i)
-            if i==998:
-                sav.save(session,"./data/ko.ckpt",global_step=i)
+            epoch=int(i/int(data.train.num_examples/batch_size))        #记录第几次循环了
+            show_progress(epoch,feed_dict_tr,feed_dict_val,val_loss,i)  #调用打印函数。
+        if i==998:
+            sav.save(session,"./data/ko.ckpt",global_step=i)
     total_iterations+=num_iteration
     
 train(num_iteration=1000)
