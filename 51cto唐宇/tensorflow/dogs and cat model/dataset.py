@@ -140,8 +140,8 @@ def load_train(train_path,image_size,classes):
             flbase=os.path.basename(f1)   #获取文件的名称
             img_names.append(flbase)
 
-            #读入文件的类别
-        cls.append(fields)                #获取类别
+            #读入文件的类别，要求每个图片数据跟一个类别
+            cls.append(fields)                #获取类别
     
     #列表变为数组不改变维度，由于元数据是
     #（图片）
