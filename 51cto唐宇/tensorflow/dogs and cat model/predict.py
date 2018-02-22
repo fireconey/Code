@@ -16,7 +16,7 @@ num_channels=3
 
 images=[]
 
-path="train_data/dogs/19.jpeg"
+path="train_data/1.jpg"
 image=cv2.imread(path)
 image=cv2.resize(image,(image_size,image_size),0,0,cv2.INTER_LINEAR)
 images.append(image)
