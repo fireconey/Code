@@ -76,11 +76,11 @@ y_true_cls=tf.argmax(y_true,dimension=1)
 filter_size_conv1=3         #第一次卷积核是3x3的
 num_filters_conv1=32        #第一次生成32个特征
 
-filter_size_conv2=3         #第一次卷积核是3x3的
-num_filters_conv2=32        #第一次生成32个特征
+filter_size_conv2=3         #第二次卷积核是3x3的
+num_filters_conv2=32        #第二次生成32个特征
 
-filter_size_conv3=3         #第一次卷积核是3x3的
-num_filters_conv3=64        #第一次生成32个特征
+filter_size_conv3=3         #第三次卷积核是3x3的
+num_filters_conv3=64        #第三次生成32个特征
 
 fc_layer_size=1024          #全链接的大小
 
@@ -100,14 +100,15 @@ def create_convolutional_layer(input,               #输入的数据
                                conv_filter_size,    #卷积核大小
                                num_filters):        #卷积特征数量，由于每次输入一定批次的数据，所以要一定数量的卷积，得到相同数量的特征
                                
-    #由于数组是从里向外定义的，
+    #由于数组是从外向里定义的，
     #读取却是从外向里读取
     #所以定义步奏为：
     #1、卷积核数长宽
     #2、通道数
-    #3、特征数
-    #卷积过程是：
-    #取第一个特征的第一个通道的矩阵区域
+    #3、特征数就是列的数量:由于卷积核卷积一次是得一个数值
+    #卷积不改变维度，但是改变特征数（列数）
+    #卷积是矩阵乘
+    
     weights=create_weights(shape=[conv_filter_size,conv_filter_size,num_input_channels,num_filters])
     
     #定义一个相同特征的数量的偏置量
@@ -150,7 +151,11 @@ def create_flaten_layer(layer):
     #后面的num_elements()是得到数据数量如取的是[8,8,64]
     #数据量就是8*8*64=64*64=4096
     num_features=layer_shape[1:4].num_elements()  
-    layer=tf.reshape(layer,[-1,num_features])
+    
+
+    #图片索引是没有动，变动的是图片按照通道和长宽进行的拉伸由于有8的宽
+    #8的长，64的通道所以列位宽*长*通道数
+    layer=tf.reshape(layer,[-1,num_features])    
     
     return layer
 
@@ -209,7 +214,7 @@ layer_fc1=create_fc_layer(input=layer_flat,
                           
                           )
 
-#全链接
+#由于要变成1*10的数据所以要最后一次全链接
 layer_fc2=create_fc_layer(input=layer_fc1,
                           num_inputs=fc_layer_size,
                           num_outputs=num_classes,
